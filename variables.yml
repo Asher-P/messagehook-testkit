@@ -1,0 +1,7 @@
+﻿variables:
+  nugetconfig: './nuget/nuget.config'
+  solution: './MessageHook.sln'
+  releaseconfig: 'Release'
+  prereleaseconfig: 'Debug'
+  packlocation: './**'
+  versionconfig: './versionconfig.yml'

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>MessageHook.Orchestration</PackageId>
+        <AssemblyName>MessageHook.Orchestration</AssemblyName>
+        <RootNamespace>MessageHook.Orchestration</RootNamespace>
+        <Authors>MessageHook Framework Team</Authors>
+        <Description>Orchestration layer for MessageHook. Provides the step factory, configuration model, and execution logic for produce-then-consume integration test flows. Supports correlation ID mode (automatic matching) and message key mode (filter by Kafka message key). Designed to be transport-agnostic — consumed by MessageHook.Kafka.</Description>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\icon.png" Pack="true" PackagePath="\" />
+      <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MessageHook.Core\MessageHook.Core.csproj" />
+    </ItemGroup>
+
+
+</Project>

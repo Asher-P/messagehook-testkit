@@ -1,0 +1,56 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool: k8s-agents-ci
+
+variables:
+  - template: variables.yml
+
+steps:
+- task: gitversion/setup@0
+  displayName: GitVersion Setup
+  inputs: 
+    versionSpec: '5.x'
+- task: gitversion/execute@0
+  displayName: "Calculate version"
+  inputs:
+    useConfigFile: true
+    configFilePath: '$(versionconfig)'
+- script: echo current version is $(GitVersion.SemVer).$(GitVersion.CommitsSinceVersionSource)
+  displayName: 'Display calculated version'
+- task: DotNetCoreCLI@2
+  displayName: "Restore Packages"
+  inputs:
+    command: 'restore'
+    projects: '$(solution)'
+    feedsToUse: 'config'
+    nugetConfigPath: '$(nugetconfig)'
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '--no-restore --configuration "$(releaseconfig)" /p:Version=$(GitVersion.SemVer).$(GitVersion.CommitsSinceVersionSource)'
+    versioningScheme: 'byBuildNumber'
+- task: ChangedFiles@1
+  name: CheckChanges
+  inputs:
+    rules: Simulator/*.*
+    variable: HasChanged
+    isOutput: false
+- script: |
+    echo HasChanged $(HasChanged)
+  displayName: "echo HasChanged"
+- task: DotNetCoreCLI@2
+  displayName: Nuget Push
+  inputs:
+    command: 'push'
+    packagesToPush: '$(packlocation)/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'NuGetOrg'
+    versioningScheme: byBuildNumber

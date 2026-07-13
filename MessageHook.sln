@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Orchestration", "MessageHook.Orchestration\MessageHook.Orchestration.csproj", "{823BDBB7-AEE5-48CD-A41E-48580EE8D227}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Core", "MessageHook.Core\MessageHook.Core.csproj", "{31FF6454-5BE0-4051-9228-0DC4C1EC2567}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Tests", "MessageHook.Tests\MessageHook.Tests.csproj", "{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Kafka", "MessageHook.Kafka\MessageHook.Kafka.csproj", "{02007AE0-765C-47B6-A904-63CE3D1A7B0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.NUnit", "MessageHook.NUnit\MessageHook.NUnit.csproj", "{C979E92D-D65C-493E-9E39-86A35079E82A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.EchoService", "MessageHook.EchoService\MessageHook.EchoService.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{823BDBB7-AEE5-48CD-A41E-48580EE8D227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{823BDBB7-AEE5-48CD-A41E-48580EE8D227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{823BDBB7-AEE5-48CD-A41E-48580EE8D227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{823BDBB7-AEE5-48CD-A41E-48580EE8D227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31FF6454-5BE0-4051-9228-0DC4C1EC2567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31FF6454-5BE0-4051-9228-0DC4C1EC2567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31FF6454-5BE0-4051-9228-0DC4C1EC2567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31FF6454-5BE0-4051-9228-0DC4C1EC2567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02007AE0-765C-47B6-A904-63CE3D1A7B0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02007AE0-765C-47B6-A904-63CE3D1A7B0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02007AE0-765C-47B6-A904-63CE3D1A7B0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02007AE0-765C-47B6-A904-63CE3D1A7B0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C979E92D-D65C-493E-9E39-86A35079E82A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C979E92D-D65C-493E-9E39-86A35079E82A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C979E92D-D65C-493E-9E39-86A35079E82A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C979E92D-D65C-493E-9E39-86A35079E82A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

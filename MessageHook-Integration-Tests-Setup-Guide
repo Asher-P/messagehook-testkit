@@ -1,0 +1,460 @@
+# MessageHook Integration Tests Setup Guide
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Step 1: Configure NuGet](#step-1-configure-nuget)
+3. [Step 2: Create the Test Project](#step-2-create-the-test-project)
+4. [Step 3: Install NuGet Packages](#step-3-install-nuget-packages)
+5. [Step 4: Configure Kafka Settings](#step-4-configure-kafka-settings)
+6. [Step 5: Define Topic and Group Constants](#step-5-define-topic-and-group-constants)
+7. [Step 6: Wire Up Dependency Injection](#step-6-wire-up-dependency-injection)
+8. [Step 7: Write Your First Test (CorrelationId mode)](#step-7-write-your-first-test-correlationid-mode)
+9. [Step 8: Write a MessageKey Mode Test](#step-8-write-a-messagekey-mode-test)
+10. [Step 9: Consumer Group Cleanup](#step-9-consumer-group-cleanup)
+11. [Best Practices](#best-practices)
+12. [Troubleshooting](#troubleshooting)
+
+---
+
+## Introduction
+
+**MessageHook** is a .NET testing framework for Kafka-based integration testing. It provides:
+
+- **End-to-End Message Flow Testing**: Produce messages to Kafka topics and consume the results
+- **Two Consuming Modes**: Match responses by an auto-generated correlation ID, or by a known Kafka message key
+- **Easy Setup**: A single `services.AddKafkaMessageHook(...)` call wires up everything
+
+This guide walks through setting up integration tests for a Kafka-based service using MessageHook, and it tracks the actual test projects shipped in this repository — [`MessageHook.Tests`](MessageHook.Tests) (xUnit) and [`MessageHook.NUnit`](MessageHook.NUnit) (NUnit). Where this guide shows code, that code is the real code from those projects (or a trivial adaptation of it), so you can always cross-check against the source.
+
+---
+
+## Step 1: Configure NuGet
+
+MessageHook is published to nuget.org, so no special feed configuration is required. A minimal `nuget.config` is enough:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+  </packageSources>
+</configuration>
+```
+
+---
+
+## Step 2: Create the Test Project
+
+```bash
+dotnet new xunit -n YourService.IntegrationTests
+# or, for NUnit:
+dotnet new nunit -n YourService.IntegrationTests
+```
+
+**Project Structure Recommendation** (matches the layout of `MessageHook.Tests` / `MessageHook.NUnit`):
+```
+YourService.IntegrationTests/
+├── Consts/
+├── Factories/
+├── Models/
+├── appsettings.json
+└── YourService.IntegrationTests.csproj
+```
+
+---
+
+## Step 3: Install NuGet Packages
+
+```bash
+dotnet add package MessageHook.Kafka
+dotnet add package KafkaFlow
+dotnet add package KafkaFlow.Microsoft.DependencyInjection
+dotnet add package Microsoft.Extensions.Configuration
+dotnet add package Microsoft.Extensions.Configuration.Json
+dotnet add package Microsoft.Extensions.Configuration.EnvironmentVariables
+dotnet add package Steeltoe.Extensions.Configuration.PlaceholderCore
+```
+
+**Why these packages?**
+- `MessageHook.Kafka`: pulls in `MessageHook.Orchestration` and `MessageHook.Core` automatically — this is the only MessageHook package you need to reference directly.
+- `KafkaFlow` / `KafkaFlow.Microsoft.DependencyInjection`: Kafka client abstraction used under the hood by `MessageHook.Kafka`.
+- `Microsoft.Extensions.Configuration.*`: standard .NET configuration plumbing.
+- `Steeltoe.Extensions.Configuration.PlaceholderCore`: resolves `${VAR}` placeholders in `appsettings.json` from environment variables.
+
+Set `appsettings.json` to copy to the output directory in your `.csproj`:
+
+```xml
+<ItemGroup>
+  <None Update="appsettings.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+```
+
+---
+
+## Step 4: Configure Kafka Settings
+
+Create `appsettings.json` in your test project root. This is the real file used by both test projects in this repo, trimmed to the parts that matter for MessageHook:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "KafkaBrokerConfiguration": {
+    "BootstrapServers": [ "localhost:9092" ],
+    "Credentials": {
+      "SecurityProtocol": "Plaintext",
+      "TlsEnabled": false
+    }
+  }
+}
+```
+
+For a non-local broker that requires authentication, use Steeltoe placeholders instead of literal values so nothing sensitive is committed:
+
+```json
+"KafkaBrokerConfiguration": {
+  "BootstrapServers": [ "${KAFKA_BOOTSTRAP}" ],
+  "Credentials": {
+    "Username":         "${KAFKA_SASL_USERNAME}",
+    "Password":         "${KAFKA_SASL_PASSWORD}",
+    "Mechanism":        "${KAFKA_SASL_MECHANISM?plain}",
+    "TlsEnabled":       "true",
+    "SecurityProtocol": "SaslSsl"
+  }
+}
+```
+
+Then set the matching environment variables:
+
+```bash
+export KAFKA_BOOTSTRAP="your-kafka-bootstrap-servers"
+export KAFKA_SASL_USERNAME="your-username"
+export KAFKA_SASL_PASSWORD="your-password"
+```
+
+A local broker for development is one `docker compose -f docker-compose.kafka.yml up` away — see the [docker-compose.kafka.yml](docker-compose.kafka.yml) in the repo root.
+
+---
+
+## Step 5: Define Topic and Group Constants
+
+Create one consts class per test project with the Kafka topic and group names it needs. This is the real, current `TestConsts.cs` from `MessageHook.Tests/Consts` (the `MessageHook.NUnit` copy is identical, just in the `MessageHook.NUnit.Consts` namespace):
+
+```csharp
+namespace MessageHook.Tests.Consts;
+
+public class TestConsts
+{
+    // Producer
+    public const string PRODUCER_ANIMAL = "A";
+
+    // Consumer
+    public const string CONSUMER_GROUP = "Automation-MessageHook-Tests";
+    public const string CONSUMER_TOPIC = "B";
+}
+```
+
+Replace `PRODUCER_ANIMAL` / `CONSUMER_TOPIC` with your own input/output topic names, and give `CONSUMER_GROUP` a name unique to your project so test runs don't collide with anyone else's consumer group.
+
+---
+
+## Step 6: Wire Up Dependency Injection
+
+This is the real constructor from `MessageHook.Tests/GeneralTests.cs`:
+
+```csharp
+using MessageHook.Kafka.Extensions;
+using MessageHook.Kafka.Serializers;
+using MessageHook.Kafka.Configurations;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Steeltoe.Extensions.Configuration.Placeholder;
+
+public class GeneralTests
+{
+    public IConfigurationRoot Configuration { get; set; }
+    private IServiceProvider _provider;
+
+    public GeneralTests()
+    {
+        IServiceCollection services = new ServiceCollection();
+
+        Configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddPlaceholderResolver()
+            .Build();
+
+        services.AddSingleton<IConfiguration>(Configuration);
+        services.AddLogging(loggingBuilder => { loggingBuilder.AddConsole(); });
+        services.AddKafkaMessageHook(builder =>
+        {
+            var kafkaBrokerConfig = Configuration.GetSection("KafkaBrokerConfiguration").Get<KafkaBrokerConfiguration>();
+
+            builder.ConfigureBroker(brokerBuilder =>
+                {
+                    brokerBuilder.WithBootstrapServers(kafkaBrokerConfig.BootstrapServers)
+                        .WithCredentials(kafkaBrokerConfig.Credentials);
+                })
+                .AddConsumer(consumerBuilder =>
+                {
+                    consumerBuilder.AddTopic(TestConsts.CONSUMER_TOPIC)
+                        .AddConsumerGroup(TestConsts.CONSUMER_GROUP)
+                        .AddConsumingSerializer(new KafkaUTF8Serializer())
+                        .AddConsumingType(typeof(Animal));   // ← your message DTO
+                })
+                .AddProducer(producerBuilder =>
+                {
+                    producerBuilder.AddProducerTopic(TestConsts.PRODUCER_ANIMAL)
+                        .AddProducerSerializer(new KafkaUTF8Serializer());
+                });
+        });
+        _provider = services.BuildServiceProvider();
+    }
+}
+```
+
+`typeof(Animal)` is the message DTO this repo's own tests use as a stand-in payload (see `Models/Animal.cs` and `Factories/AnimalFactory.cs` in either test project). Swap it for your own message type.
+
+---
+
+## Step 7: Write Your First Test (CorrelationId mode)
+
+CorrelationId mode is the default: you don't set `ExpectedMessageKey`, and MessageHook generates and injects a correlation ID for you. This is the real `MessageHookTest()` from `MessageHook.Tests/GeneralTests.cs`:
+
+```csharp
+[Fact]
+public async Task MessageHookTest()
+{
+    try
+    {
+        var MessageHookFactory = _provider.GetRequiredService<IMessageHookFactory>();
+        var MessageHookStep = await MessageHookFactory.CreateMessageHookStepAsync(new MessageHookConfiguration()
+        {
+            ProduceTo = TestConsts.PRODUCER_ANIMAL,
+            ConsumeFrom = new[] { TestConsts.CONSUMER_TOPIC },
+            ConsumingOptions = new ConsumingOptionsConfiguration()
+            {
+                TimeOut = TimeSpan.FromSeconds(30),
+                MsgReceivedCount = 1,
+            }
+        });
+
+        var animal = AnimalFactory.Create();
+        var waitForMessagesTask = await MessageHookStep.ExecuteAsync($"{animal.Id}", animal);
+        await Task.Delay(1000);
+
+        var messages = await waitForMessagesTask.Task;
+        Console.WriteLine(JsonSerializer.Serialize(messages));
+    }
+    finally
+    {
+        Console.WriteLine("Clean Up");
+        DeleteConsumerGroupAsync().GetAwaiter().GetResult();
+    }
+}
+```
+
+---
+
+## Step 8: Write a MessageKey Mode Test
+
+Use MessageKey mode to consume by Kafka message key instead of a correlation ID — for flows with no correlation ID at all, such as database changes, external triggers, or broadcasts with a known, predictable key. This is the real `MessageKeyMessageHookTest_ProduceWithKeyAndConsumeByKey()` from `MessageHook.NUnit/MessageKeyMessageHookTest.cs`:
+
+```csharp
+[Test]
+public async Task MessageKeyMessageHookTest_ProduceWithKeyAndConsumeByKey()
+{
+    try
+    {
+        var animal = AnimalFactory.Create("Luna");
+
+        var MessageHookFactory = _provider.GetRequiredService<IMessageHookFactory>();
+        var MessageHookStep = await MessageHookFactory.CreateMessageHookStepAsync(new MessageHookConfiguration()
+        {
+            ProduceTo = TestConsts.PRODUCER_ANIMAL,
+            ConsumeFrom = new[] { TestConsts.CONSUMER_TOPIC },
+            ConsumingOptions = new ConsumingOptionsConfiguration()
+            {
+                TimeOut = TimeSpan.FromSeconds(30),
+                MsgReceivedCount = 1,
+                ExpectedMessageKey = $"{animal.Id}"
+            }
+        });
+
+        var waitForMessagesTask = await MessageHookStep.ExecuteAsync($"{animal.Id}", animal);
+        await Task.Delay(1000);
+
+        var messages = await waitForMessagesTask.Task;
+        Console.WriteLine($"Received {messages.Count()} message containers");
+        Console.WriteLine(JsonSerializer.Serialize(messages));
+    }
+    finally
+    {
+        Console.WriteLine("Clean Up");
+        await DeleteConsumerGroupAsync();
+    }
+}
+```
+
+---
+
+## Step 9: Consumer Group Cleanup
+
+Proper cleanup is essential to avoid test interference between runs. This is the real `DeleteConsumerGroupAsync()` shared by both test projects:
+
+```csharp
+public async Task DeleteConsumerGroupAsync()
+{
+    var kafkaBus = _provider.GetRequiredService<IKafkaBus>();
+    foreach (var messageConsumer in kafkaBus.Consumers.All)
+        await messageConsumer.StopAsync();
+
+    Thread.Sleep(TimeSpan.FromSeconds(10));
+
+    var kafkaBrokerConfig = Configuration.GetSection("KafkaBrokerConfiguration").Get<KafkaBrokerConfiguration>();
+
+    var adminClientConfig = new AdminClientConfig
+    {
+        BootstrapServers = string.Join(",", kafkaBrokerConfig.BootstrapServers),
+    };
+
+    if (Enum.TryParse<SecurityProtocol>(kafkaBrokerConfig.Credentials.SecurityProtocol, true, out var securityProtocol))
+        adminClientConfig.SecurityProtocol = securityProtocol;
+
+    if (kafkaBrokerConfig.Credentials.HasCredentials)
+    {
+        adminClientConfig.SaslUsername = kafkaBrokerConfig.Credentials.Username;
+        adminClientConfig.SaslPassword = kafkaBrokerConfig.Credentials.Password;
+
+        if (Enum.TryParse<SaslMechanism>(kafkaBrokerConfig.Credentials.Mechanism, true, out var saslMechanism))
+            adminClientConfig.SaslMechanism = saslMechanism;
+    }
+
+    var adminClient = new AdminClientBuilder(adminClientConfig).Build();
+
+    await kafkaBus.StopAsync();
+    while (true)
+    {
+        try
+        {
+            await kafkaBus.StopAsync();
+            await adminClient.DeleteGroupsAsync(new List<string> { TestConsts.CONSUMER_GROUP });
+            break;
+        }
+        catch (DeleteGroupsException e)
+        {
+            if (e.Message.Contains("The group id does not exist"))
+                return;
+            Console.WriteLine(e);
+        }
+    }
+}
+```
+
+**Why each step matters:**
+
+| Step | Reason |
+|---|---|
+| Stop all `kafkaBus.Consumers.All` | Commits offsets and sends `LeaveGroup` to the broker for each consumer. |
+| `Thread.Sleep(10s)` | Kafka needs time to mark the group `Empty` after all members leave; deleting too early is rejected. |
+| Build `AdminClientConfig` from the same credentials | The admin client must authenticate the same way the test consumers/producers did. |
+| Retry loop | The first delete attempt can still fail right after the sleep; the loop retries until it succeeds. |
+| "group does not exist" early exit | If a previous run already deleted the group, exit immediately instead of looping forever. |
+
+---
+
+## Best Practices
+
+### 1. Use Unique Consumer Groups
+
+```csharp
+// ✅ Good - unique per test project
+public const string CONSUMER_GROUP = "Automation-MessageHook-Tests";
+
+// ❌ Bad - generic name might conflict
+public const string CONSUMER_GROUP = "test-group";
+```
+
+### 2. Always Clean Up in a `finally` Block
+
+```csharp
+try
+{
+    // test body
+}
+finally
+{
+    await DeleteConsumerGroupAsync();
+}
+```
+
+### 3. Set Appropriate Timeouts
+
+```csharp
+TimeOut = TimeSpan.FromSeconds(30)  // fast services
+TimeOut = TimeSpan.FromSeconds(60)  // slower processing
+TimeOut = TimeSpan.FromMinutes(2)   // batch operations
+```
+
+### 4. Async/Await Correctly
+
+```csharp
+// ✅ Good
+var messages = await waitForMessagesTask.Task;
+
+// ❌ Bad - can deadlock
+var messages = waitForMessagesTask.Task.Result;
+```
+
+### 5. Don't Set ExpectedMessageKey When Producing
+
+`ExpectedMessageKey` is for consume-by-key flows. When you call `ExecuteAsync(key, message)` to produce, MessageHook generates the correlation ID for you — leave `ExpectedMessageKey` unset.
+
+---
+
+## Troubleshooting
+
+### Consumer Group Already Exists / Still In Use
+
+1. Confirm `DeleteConsumerGroupAsync()` runs in a `finally` block on every test.
+2. Manually delete it if needed:
+   ```bash
+   kafka-consumer-groups --bootstrap-server localhost:9092 --delete --group your-group
+   ```
+3. Use a unique consumer group name per test project.
+
+### Timeout Waiting for Messages
+
+1. Verify your service is running and processing messages.
+2. Check topic names match exactly (case-sensitive).
+3. Increase `TimeOut` if your service is legitimately slow.
+4. Check Kafka broker connectivity and consumer subscription.
+
+### Serialization Errors
+
+1. Confirm the serializer matches the message format (`KafkaUTF8Serializer` for JSON/UTF-8, `KafkaProtobufSerializer` for binary).
+2. Verify DTO properties match the message structure.
+
+### Connection Refused / Authentication Failures
+
+1. Verify the broker is running and reachable.
+2. Check `BootstrapServers` and SASL credentials.
+3. Confirm `SecurityProtocol` matches the broker's configuration (`Plaintext`, `SaslSsl`, etc.).
+
+### Running Tests
+
+```bash
+# Run all tests
+dotnet test
+
+# Run a specific test
+dotnet test --filter "FullyQualifiedName~MessageHookTest"
+```
