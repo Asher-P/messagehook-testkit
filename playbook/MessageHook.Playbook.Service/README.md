@@ -31,14 +31,15 @@ the broker's *advertised* listeners after bootstrap, so:
 
 ```sh
 # terminal 1 — service (serves API; also serves wwwroot if you've built the UI into it)
-dotnet run --project MessageHook.Playbook.Service      # http://localhost:5xxx (or set ASPNETCORE_URLS)
+dotnet run --project playbook/MessageHook.Playbook.Service   # http://localhost:5xxx (or set ASPNETCORE_URLS)
 
 # terminal 2 — UI dev server with hot reload (proxies /api to http://localhost:8099)
-cd messagehook-ui && npm install && npm run dev        # http://localhost:5173
+cd playbook/messagehook-ui && npm install && npm run dev     # http://localhost:5173
 ```
 
-For a production-like local check, `npm run build` in `messagehook-ui` and copy `dist/*` into
-`MessageHook.Playbook.Service/wwwroot`, then just run the service — it serves the SPA and API same-origin.
+For a production-like local check, `npm run build` in `playbook/messagehook-ui` and copy `dist/*` into
+`playbook/MessageHook.Playbook.Service/wwwroot`, then just run the service — it serves the SPA and API same-origin.
+Or just run `bake-ui.sh` / `bake-ui.bat` from the repo root, which does the build-and-copy for you.
 
 Set the data directory with `DataDir` (defaults to `./data` locally, `/data` in the container).
 

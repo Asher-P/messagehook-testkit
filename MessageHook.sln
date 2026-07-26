@@ -1,22 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Orchestration", "MessageHook.Orchestration\MessageHook.Orchestration.csproj", "{823BDBB7-AEE5-48CD-A41E-48580EE8D227}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Orchestration", "infrastructure\MessageHook.Orchestration\MessageHook.Orchestration.csproj", "{823BDBB7-AEE5-48CD-A41E-48580EE8D227}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Core", "MessageHook.Core\MessageHook.Core.csproj", "{31FF6454-5BE0-4051-9228-0DC4C1EC2567}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Core", "infrastructure\MessageHook.Core\MessageHook.Core.csproj", "{31FF6454-5BE0-4051-9228-0DC4C1EC2567}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Tests", "MessageHook.Tests\MessageHook.Tests.csproj", "{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Tests", "tests\MessageHook.Tests\MessageHook.Tests.csproj", "{FAF65A37-25EF-4DEA-978D-19AF7D1432C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Kafka", "MessageHook.Kafka\MessageHook.Kafka.csproj", "{02007AE0-765C-47B6-A904-63CE3D1A7B0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Kafka", "infrastructure\MessageHook.Kafka\MessageHook.Kafka.csproj", "{02007AE0-765C-47B6-A904-63CE3D1A7B0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.NUnit", "MessageHook.NUnit\MessageHook.NUnit.csproj", "{C979E92D-D65C-493E-9E39-86A35079E82A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.NUnit", "tests\MessageHook.NUnit\MessageHook.NUnit.csproj", "{C979E92D-D65C-493E-9E39-86A35079E82A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.EchoService", "MessageHook.EchoService\MessageHook.EchoService.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.EchoService", "tests\MessageHook.EchoService\MessageHook.EchoService.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook", "MessageHook.Playbook\MessageHook.Playbook.csproj", "{BA66B8E3-3380-43DB-8E1D-2E332ABCD803}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook", "playbook\MessageHook.Playbook\MessageHook.Playbook.csproj", "{BA66B8E3-3380-43DB-8E1D-2E332ABCD803}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook.NUnit", "MessageHook.Playbook.NUnit\MessageHook.Playbook.NUnit.csproj", "{6FA23ECC-5148-4867-87D6-E2557A39FBD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook.NUnit", "playbook\MessageHook.Playbook.NUnit\MessageHook.Playbook.NUnit.csproj", "{6FA23ECC-5148-4867-87D6-E2557A39FBD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook.Service", "MessageHook.Playbook.Service\MessageHook.Playbook.Service.csproj", "{F4FD07F9-FA2B-46CD-9B77-232E666D69C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageHook.Playbook.Service", "playbook\MessageHook.Playbook.Service\MessageHook.Playbook.Service.csproj", "{F4FD07F9-FA2B-46CD-9B77-232E666D69C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

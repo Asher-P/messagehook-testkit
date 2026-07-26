@@ -11,7 +11,7 @@ services:
   playbook-ui:
     build:
       context: .
-      dockerfile: MessageHook.Playbook.Service/Dockerfile
+      dockerfile: playbook/MessageHook.Playbook.Service/Dockerfile
     container_name: messagehook_playbook_ui
     ports:
       - "8081:8080"

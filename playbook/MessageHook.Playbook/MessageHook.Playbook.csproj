@@ -15,13 +15,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="..\icon.png" Pack="true" PackagePath="\" />
+      <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
       <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MessageHook.Kafka\MessageHook.Kafka.csproj" />
-      <ProjectReference Include="..\MessageHook.Orchestration\MessageHook.Orchestration.csproj" />
+      <ProjectReference Include="..\..\infrastructure\MessageHook.Kafka\MessageHook.Kafka.csproj" />
+      <ProjectReference Include="..\..\infrastructure\MessageHook.Orchestration\MessageHook.Orchestration.csproj" />
     </ItemGroup>
 
     <ItemGroup>
