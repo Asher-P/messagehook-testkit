@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>MessageHook.Playbook.Service</RootNamespace>
+        <AssemblyName>MessageHook.Playbook.Service</AssemblyName>
+        <!-- The React app is copied into wwwroot at container build time; nothing to bundle from source here. -->
+        <SpaRoot>..\messagehook-ui\</SpaRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MessageHook.Playbook\MessageHook.Playbook.csproj" />
+    </ItemGroup>
+
+</Project>

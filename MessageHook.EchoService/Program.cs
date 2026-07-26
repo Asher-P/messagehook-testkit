@@ -1,5 +1,6 @@
 ﻿using MessageHook.EchoService.Middlewares;
 using MessageHook.EchoService.Serializers;
+using MessageHook.EchoService.Tracking;
 using KafkaFlow;
 using KafkaFlow.Configuration;
 
@@ -9,6 +10,10 @@ builder.Logging.AddConsole();
 
 var bootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "localhost:9092";
 var serializer = new RawBytesSerializer();
+
+// Singleton: the name-per-id history has to outlive individual messages and be shared across workers.
+builder.Services.AddSingleton<MessageChangeTracker>();
+builder.Services.AddSingleton<PayloadChangeStamper>();
 
 builder.Services.AddKafkaFlowHostedService(kafka =>
     kafka.AddCluster(cluster =>

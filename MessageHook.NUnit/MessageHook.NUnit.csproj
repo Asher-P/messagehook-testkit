@@ -32,13 +32,19 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\MessageHook.EchoService\MessageHook.EchoService.csproj" />
       <ProjectReference Include="..\MessageHook.Kafka\MessageHook.Kafka.csproj" />
       <ProjectReference Include="..\MessageHook.Orchestration\MessageHook.Orchestration.csproj" />
+      <ProjectReference Include="..\MessageHook.Playbook\MessageHook.Playbook.csproj" />
+      <ProjectReference Include="..\MessageHook.Playbook.NUnit\MessageHook.Playbook.NUnit.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Update="appsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Playbooks\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

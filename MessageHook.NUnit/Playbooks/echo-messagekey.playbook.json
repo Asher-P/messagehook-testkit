@@ -1,0 +1,35 @@
+{
+  "Name": "animal-echo-messagekey",
+  "KafkaConfiguration": {
+    "BootstrapServers": [ "${KAFKA_BOOTSTRAP:localhost:9092}" ],
+    "Credentials": {
+      "SecurityProtocol": "Plaintext",
+      "TlsEnabled": false
+    },
+    "ConsumerGroup": "Automation-Playbook-Key-Tests"
+  },
+
+  "ConsumeTopics": [ "B" ],
+  "ProduceTopics": [ { "topic": "A", "serializer": "Json" } ],
+
+  "Test": {
+    "Steps": [
+      {
+        "Name": "echo animal matched by guid key",
+        "ProduceTo": "A",
+        "ConsumeFrom": [ "B" ],
+        "Key": "{{guid}}",
+        "Send": { "file": "payloads/animal.json" },
+        "Override": { "id": "{{guid}}", "name": "Luna" },
+        "Match": { "mode": "MessageKey" },
+        "ExpectedMessageCount": 1,
+        "TimeoutSeconds": 30,
+        "Validations": [
+          { "path": "name", "type": "Equals", "expected": "Luna" },
+          { "path": "id", "type": "Exists" },
+          { "target": "key", "type": "Matches", "expected": "^[0-9a-fA-F-]{36}$" }
+        ]
+      }
+    ]
+  }
+}

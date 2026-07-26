@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>MessageHook.Playbook.NUnit</PackageId>
+        <AssemblyName>MessageHook.Playbook.NUnit</AssemblyName>
+        <RootNamespace>MessageHook.Playbook.NUnit</RootNamespace>
+        <Authors>MessageHook Framework Team</Authors>
+        <Description>NUnit adapter for MessageHook.Playbook. Discovers *.playbook.json files and surfaces each as its own NUnit test via [TestCaseSource], asserting on the PlaybookResult. Kept separate from the core library so MessageHook.Playbook carries no test-framework dependency.</Description>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\icon.png" Pack="true" PackagePath="\" />
+      <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NUnit" Version="3.13.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MessageHook.Playbook\MessageHook.Playbook.csproj" />
+    </ItemGroup>
+
+</Project>

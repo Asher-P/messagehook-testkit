@@ -1,0 +1,56 @@
+{
+  "Name": "animal-change-detection",
+  "KafkaConfiguration": {
+    "BootstrapServers": [ "${KAFKA_BOOTSTRAP:localhost:9092}" ],
+    "Credentials": {
+      "SecurityProtocol": "Plaintext",
+      "TlsEnabled": false
+    },
+    "ConsumerGroup": "Automation-Playbook-Change-Tests"
+  },
+
+  "ConsumeTopics": [ "B" ],
+  "ProduceTopics": [ { "topic": "A", "serializer": "Json" } ],
+
+  "Test": {
+    "Steps": [
+      {
+        "Name": "seed the animal as a cat (produce only)",
+        "ProduceTo": "A",
+        "Key": "${ANIMAL_ID:animal-change-1}",
+        "Send": { "file": "payloads/animal.json" },
+        "Override": { "id": "${ANIMAL_ID:animal-change-1}", "name": "cat" }
+      },
+      {
+        "Name": "rename the same animal to dog — echo reports IsChanged true",
+        "ProduceTo": "A",
+        "ConsumeFrom": [ "B" ],
+        "Key": "${ANIMAL_ID:animal-change-1}",
+        "Send": { "file": "payloads/animal.json" },
+        "Override": { "id": "${ANIMAL_ID:animal-change-1}", "name": "dog" },
+        "Match": { "mode": "CorrelationId" },
+        "ExpectedMessageCount": 1,
+        "TimeoutSeconds": 30,
+        "Validations": [
+          { "path": "name", "type": "Equals", "expected": "dog" },
+          { "path": "IsChanged", "type": "Equals", "expected": true }
+        ]
+      },
+      {
+        "Name": "resend the same name — echo reports IsChanged false",
+        "ProduceTo": "A",
+        "ConsumeFrom": [ "B" ],
+        "Key": "${ANIMAL_ID:animal-change-1}",
+        "Send": { "file": "payloads/animal.json" },
+        "Override": { "id": "${ANIMAL_ID:animal-change-1}", "name": "dog" },
+        "Match": { "mode": "CorrelationId" },
+        "ExpectedMessageCount": 1,
+        "TimeoutSeconds": 30,
+        "Validations": [
+          { "path": "name", "type": "Equals", "expected": "dog" },
+          { "path": "IsChanged", "type": "Equals", "expected": false }
+        ]
+      }
+    ]
+  }
+}

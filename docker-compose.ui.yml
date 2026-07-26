@@ -1,0 +1,32 @@
+# Runs the MessageHook Playbook board UI + service in one container.
+# The container connects to an EXISTING Kafka — it never provisions one. Enter the broker's bootstrap in the
+# suite's Kafka form.
+#
+# Kafka reachability (important): a Kafka client follows the broker's ADVERTISED listeners after bootstrap.
+#   - If your broker advertises a host-reachable address, use host.docker.internal:9092 (mapped below).
+#   - If it advertises only an internal name (e.g. INTERNAL://kafka:29092), that name isn't resolvable from a
+#     bare container. Attach this container to the broker's docker network and use that internal bootstrap —
+#     uncomment the `networks:` blocks below and set the network name to your broker's network.
+services:
+  playbook-ui:
+    build:
+      context: .
+      dockerfile: MessageHook.Playbook.Service/Dockerfile
+    container_name: messagehook_playbook_ui
+    ports:
+      - "8081:8080"
+    volumes:
+      - messagehook_playbook_data:/data   # suites + uploaded payloads persist here
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # networks:
+    #   - default
+    #   - kafka_net
+
+volumes:
+  messagehook_playbook_data:
+
+# networks:
+#   kafka_net:
+#     external: true
+#     name: <your-brokers-docker-network>   # e.g. create-level-flow_default; then use kafka:29092 as bootstrap

@@ -1,6 +1,7 @@
-﻿using System.Text;
+using System.Text;
 using KafkaFlow;
 using KafkaFlow.Producers;
+using MessageHook.EchoService.Tracking;
 using Microsoft.Extensions.Logging;
 
 namespace MessageHook.EchoService.Middlewares;
@@ -8,11 +9,13 @@ namespace MessageHook.EchoService.Middlewares;
 public class EchoMiddleware : IMessageMiddleware
 {
     private readonly IProducerAccessor _producers;
+    private readonly PayloadChangeStamper _stamper;
     private readonly ILogger<EchoMiddleware> _logger;
 
-    public EchoMiddleware(IProducerAccessor producers, ILogger<EchoMiddleware> logger)
+    public EchoMiddleware(IProducerAccessor producers, PayloadChangeStamper stamper, ILogger<EchoMiddleware> logger)
     {
         _producers = producers;
+        _stamper = stamper;
         _logger = logger;
     }
 
@@ -28,7 +31,10 @@ public class EchoMiddleware : IMessageMiddleware
             ? Encoding.UTF8.GetString(keyBytes)
             : context.Message.Key?.ToString();
 
-        await producer.ProduceAsync("B", key, context.Message.Value, headers);
+        // Echo the payload back annotated with whether this id's name changed since the last message for it.
+        var value = context.Message.Value is byte[] bytes ? _stamper.Stamp(bytes, key) : context.Message.Value;
+
+        await producer.ProduceAsync("B", key, value, headers);
 
         _logger.LogInformation("Echoed message from A to B. Key: {Key}", key);
 

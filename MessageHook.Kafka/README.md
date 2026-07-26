@@ -94,6 +94,24 @@ var result = await step.ExecuteAsync("my-key", myPayload, new ProducingExtraData
 
 The repo includes `MessageHook.EchoService` — a ready-made Kafka echo service that consumes from topic `A` and re-produces to topic `B`, preserving the original message key and headers. Useful for local integration testing without a real downstream service.
 
+It also does one small piece of stateful work, so tests have something to assert on beyond a round-trip: it
+remembers the last `name` it saw for each `id` and stamps an **`IsChanged`** flag onto the echoed payload.
+
+| Case | `IsChanged` |
+|---|---|
+| first message for an `id` | `false` |
+| same `id`, different `name` than last time | `true` |
+| same `id`, same `name` | `false` |
+
+`id` and `name` are matched case-insensitively; when a payload has no `id`, the Kafka message key identifies it
+instead. An inbound `IsChanged` is ignored and overwritten. Payloads that aren't JSON objects are echoed
+byte-for-byte. The history is in memory, so restarting the service clears it.
+
+```
+A: { "id": "1", "name": "cat" }   ->   B: { "id": "1", "name": "cat", "IsChanged": false }
+A: { "id": "1", "name": "dog" }   ->   B: { "id": "1", "name": "dog", "IsChanged": true  }
+```
+
 ## Source & Issues
 
 [github.com/Asher-P/messagehook-testkit](https://github.com/Asher-P/messagehook-testkit)
