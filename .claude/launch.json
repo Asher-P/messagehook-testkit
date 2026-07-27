@@ -1,0 +1,30 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playbook-ui",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "playbook/MessageHook.Playbook.Service",
+        "--",
+        "--urls",
+        "http://localhost:8099"
+      ],
+      "port": 8099
+    },
+    {
+      "name": "messagehook-ui-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "playbook/messagehook-ui",
+        "run",
+        "dev"
+      ],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}

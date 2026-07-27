@@ -1,0 +1,34 @@
+{
+  "Name": "animal-echo",
+  "KafkaConfiguration": {
+    "BootstrapServers": [ "${KAFKA_BOOTSTRAP:localhost:9092}" ],
+    "Credentials": {
+      "SecurityProtocol": "Plaintext",
+      "TlsEnabled": false
+    },
+    "ConsumerGroup": "Automation-Playbook-Tests"
+  },
+
+  "ConsumeTopics": [ "B" ],
+  "ProduceTopics": [ { "topic": "A", "serializer": "Json" } ],
+
+  "Test": {
+    "Steps": [
+      {
+        "Name": "echo animal A to B",
+        "ProduceTo": "A",
+        "ConsumeFrom": [ "B" ],
+        "Key": "{{guid}}",
+        "Send": { "file": "payloads/animal.json" },
+        "Override": { "id": "{{guid}}", "name": "Buddy" },
+        "Match": { "mode": "CorrelationId" },
+        "ExpectedMessageCount": 1,
+        "TimeoutSeconds": 30,
+        "Validations": [
+          { "path": "name", "type": "Equals", "expected": "Buddy" },
+          { "path": "id", "type": "Exists" }
+        ]
+      }
+    ]
+  }
+}

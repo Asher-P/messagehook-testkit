@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageId>MessageHook.Playbook</PackageId>
+        <AssemblyName>MessageHook.Playbook</AssemblyName>
+        <RootNamespace>MessageHook.Playbook</RootNamespace>
+        <Authors>MessageHook Framework Team</Authors>
+        <Description>JSON-driven test scenarios for MessageHook. Describe a Kafka integration test as a declarative *.playbook.json — broker config, the topics in play, and an ordered list of produce/consume steps with structured validations — and run it against the existing MessageHook.Kafka infrastructure with no C# per scenario. Host-agnostic: drives from a file, a stream, or an in-memory definition, so a CLI, an NUnit adapter, or a web UI can all sit on top of the same runner.</Description>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+      <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\infrastructure\MessageHook.Kafka\MessageHook.Kafka.csproj" />
+      <ProjectReference Include="..\..\infrastructure\MessageHook.Orchestration\MessageHook.Orchestration.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Confluent.Kafka" Version="2.8.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+      <PackageReference Include="Utf8Json" Version="1.3.7" />
+    </ItemGroup>
+
+</Project>

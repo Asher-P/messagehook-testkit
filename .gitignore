@@ -48,3 +48,6 @@ _ReSharper.Caches/
 
 # Internal docs
 memory-bank/
+
+# Claude Code local machine state (permission allowlist, absolute paths)
+.claude/settings.local.json

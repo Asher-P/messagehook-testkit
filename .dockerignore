@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/node_modules/
+playbook/messagehook-ui/dist/
+playbook/MessageHook.Playbook.Service/wwwroot/
+playbook/MessageHook.Playbook.Service/data/
+**/.vs/
+**/.git/
