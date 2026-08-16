@@ -40,16 +40,18 @@ export default function SuiteEditor() {
 
   const setStatus = (caseId: string, s: RunState) => setRunStatus(prev => ({ ...prev, [caseId]: s }))
 
-  const addCase = async () => {
+  // Unpersisted on purpose: a case is only ever written to the suite when the flow editor actually saves it
+  // (Save/Validate/Run, or any autosave it adds later). Navigating to the editor and back without doing
+  // anything there must leave the suite untouched, so nothing is sent to the server here — the new case only
+  // exists in router state until the editor itself persists it.
+  const addCase = () => {
     const c: TestCase = {
       id: crypto.randomUUID().replace(/-/g, ''),
       name: `case ${suite.testCases.length + 1}`,
       description: '',
       steps: []
     }
-    const saved = await persist({ ...suite, testCases: [...suite.testCases, c] })
-    const created = saved.testCases.find(x => x.id === c.id) ?? c
-    nav(`/suites/${suite.id}/cases/${created.id}`)
+    nav(`/suites/${suite.id}/cases/${c.id}`, { state: { draftCase: c } })
   }
 
   const deleteCase = async (caseId: string) => {
@@ -80,9 +82,12 @@ export default function SuiteEditor() {
   return (
     <div className="app">
       <div className="topbar">
-        <div>
-          <h1>{suite.name}</h1>
-          <div className="crumbs"><Link to="/">Suites</Link> / {suite.name}</div>
+        <div className="row">
+          <Link to="/" className="back-btn" title="Back to suites" aria-label="Back to suites">←</Link>
+          <div>
+            <h1>{suite.name}</h1>
+            <div className="crumbs"><Link to="/">Suites</Link> / {suite.name}</div>
+          </div>
         </div>
         <div className="row">
           {savedAt && <span className="muted small">saved {savedAt}</span>}
@@ -123,7 +128,7 @@ export default function SuiteEditor() {
                         <td className="num">
                           <div className="row" style={{ justifyContent: 'flex-end' }}>
                             <button className="sm primary" onClick={() => runOne(c.id)} disabled={st === 'running'}>▶ Run</button>
-                            <Link to={`/suites/${suite.id}/cases/${c.id}`}><button className="sm ghost">edit</button></Link>
+                            <Link to={`/suites/${suite.id}/cases/${c.id}`}><button className="sm ghost">open</button></Link>
                             <button className="sm danger" onClick={() => deleteCase(c.id)}>✕</button>
                           </div>
                         </td>

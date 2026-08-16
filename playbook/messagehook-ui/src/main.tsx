@@ -4,7 +4,7 @@ import { createBrowserRouter, Link, Navigate, Outlet, RouterProvider } from 'rea
 import './styles.css'
 import Board from './pages/Board'
 import SuiteEditor from './pages/SuiteEditor'
-import CaseStepsPage from './pages/CaseStepsPage'
+import FlowEditor from './pages/FlowEditor'
 import Docs from './pages/Docs'
 import { ThemeToggle, applyTheme, initialTheme } from './components/ThemeToggle'
 
@@ -30,7 +30,8 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Board /> },
       { path: '/suites/:id', element: <SuiteEditor /> },
-      { path: '/suites/:id/cases/:caseId', element: <CaseStepsPage /> },
+      // The node-flow canvas is the (only) test case editor.
+      { path: '/suites/:id/cases/:caseId', element: <FlowEditor /> },
       { path: '/docs', element: <Navigate to="/docs/overview" replace /> },
       { path: '/docs/:slug', element: <Docs /> }
     ]
